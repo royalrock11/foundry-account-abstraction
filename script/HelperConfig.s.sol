@@ -8,7 +8,6 @@ import {EntryPoint} from "lib/account-abstraction/contracts/core/EntryPoint.sol"
 import {console2} from "lib/openzeppelin-contracts/lib/forge-std/src/console2.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
-
 contract HelperConfig is Script {
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
@@ -19,7 +18,7 @@ contract HelperConfig is Script {
                                  TYPES
     //////////////////////////////////////////////////////////////*/
 
-   struct NetworkConfig {
+    struct NetworkConfig {
         address entryPoint;
         // address usdc;
         address account;
@@ -34,11 +33,13 @@ contract HelperConfig is Script {
     uint256 constant LOCAL_CHAIN_ID = 31337;
     address constant BURNER_WALLET = 0xc83965e46AF878D78aEb901fA1f359A178989de0;
 
-    address constant FOUNDRY_DEFAULT_WALLET = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+    // address constant FOUNDRY_DEFAULT_WALLET = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+
+    address public constant ANVIL_DEFAULT_ACCOUNT = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     NetworkConfig public localNetworkConfig;
 
-    mapping(uint256 => NetworkConfig) public networkConfigs;
+    mapping(uint256 chainId => NetworkConfig) public networkConfigs;
 
     /*//////////////////////////////////////////////////////////////
                                FUNCTIONS
@@ -48,7 +49,7 @@ contract HelperConfig is Script {
         networkConfigs[ETH_SEPOLIA_CHAIN_ID] = getEthSepoliaConfig();
     }
 
-   function getConfig() public returns (NetworkConfig memory) {
+    function getConfig() public returns (NetworkConfig memory) {
         return getConfigByChainId(block.chainid);
     }
 
@@ -79,12 +80,14 @@ contract HelperConfig is Script {
         }
 
         // console2.log("Deploying Mocks...");
-        vm.startBroadcast(FOUNDRY_DEFAULT_WALLET);
+        vm.startBroadcast(ANVIL_DEFAULT_ACCOUNT);
 
         EntryPoint entryPoint = new EntryPoint();
 
         vm.stopBroadcast();
 
-        return NetworkConfig({entryPoint: address(entryPoint), account: FOUNDRY_DEFAULT_WALLET});
+        localNetworkConfig = NetworkConfig({entryPoint: address(entryPoint), account: ANVIL_DEFAULT_ACCOUNT});
+
+        return localNetworkConfig;
     }
 }
